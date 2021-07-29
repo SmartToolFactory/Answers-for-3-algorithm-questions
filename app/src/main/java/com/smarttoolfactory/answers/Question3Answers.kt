@@ -62,56 +62,32 @@ fun parseStringAssisted(source: String): String {
  */
 fun parseString(source: String): String {
 
-    var firstIndexOfHeader = -1
-    var lastIndexOfHeader = -1
-
-    var firstIndexOfTitle = -1
-
-    var headerStarted = false
-    var headerEnd = false
-    var titleStarted = false
     var spaceAfterHeader = false
-
     var headerLevel = 0
 
     source.forEachIndexed { index, c ->
 
-        if (c == '#') {
-
-            // This is the first hash of header, it must be before a title
-            if (!headerStarted && !spaceAfterHeader) {
-                firstIndexOfHeader = index
-                headerStarted = true
-            }
-
-            // Count number of header level
-            if (headerStarted && !headerEnd) {
-                headerLevel++
-
-                if (headerLevel > 6) return "Invalid String, too many hashes!"
-            }
-
+        if (c == '#' && !spaceAfterHeader) {
+            headerLevel++
+            if (headerLevel > 6) return "Invalid String, too many hashes!"
         } else if (c == ' ') {
-            // this is first space after header
-            if (headerStarted && !headerEnd && firstIndexOfHeader + headerLevel == index) {
-                headerEnd = true
+            // Space after end of delimiter, this is our Title
+            if (headerLevel > 0 && !spaceAfterHeader) {
                 spaceAfterHeader = true
-                lastIndexOfHeader = index
+
+                val title = source.substring(index)
+                return "<h$headerLevel>${title.trim()}</h$headerLevel>"
             }
         } else {
-            if (headerStarted && headerEnd && !titleStarted) {
-                firstIndexOfTitle = index
-            }
-            titleStarted = true
+            // There are other chars before header or chars just after delimeter without space
+            if (headerLevel == 0) return "Invalid String, chars before header!"
+            if (!spaceAfterHeader) return "Invalid String, Missing Space!"
         }
     }
 
-    if (headerLevel ==0) return "Invalid String, no headers!"
-    if (!spaceAfterHeader) return "Invalid String, Missing Space!"
+    if (headerLevel == 0) return "Invalid String, no headers"
 
-    val title = source.substring(firstIndexOfTitle)
-    return "<h$headerLevel>${title.trim()}</h$headerLevel>"
+    return "Invalid sting"
 }
-
 
 const val REGEX = "^(\\s*#{1,6}\\s+)((\\w*\\s*)+)"
