@@ -66,27 +66,22 @@ fun parseString(source: String): String {
     var headerLevel = 0
 
     source.forEachIndexed { index, c ->
-
+        // Before space delimiter count is our heading level
         if (c == '#' && !spaceAfterHeader) {
             headerLevel++
             if (headerLevel > 6) return "Invalid String, too many hashes!"
-        } else if (c == ' ') {
-            // Space after end of delimiter, this is our Title
-            if (headerLevel > 0 && !spaceAfterHeader) {
-                spaceAfterHeader = true
+        } else if (c == ' ' && headerLevel > 0 && !spaceAfterHeader) {
+            // This is the space after delimiter, any string after it is our title
+            spaceAfterHeader = true
+            return "<h$headerLevel>${source.substring(index).trim()}</h$headerLevel>"
 
-                val title = source.substring(index)
-                return "<h$headerLevel>${title.trim()}</h$headerLevel>"
-            }
         } else {
-            // There are other chars before header or chars just after delimeter without space
             if (headerLevel == 0) return "Invalid String, chars before header!"
             if (!spaceAfterHeader) return "Invalid String, Missing Space!"
         }
     }
 
     if (headerLevel == 0) return "Invalid String, no headers"
-
     return "Invalid sting"
 }
 
